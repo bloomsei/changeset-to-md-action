@@ -13,8 +13,8 @@ async function run() {
     const region = core.getInput('region');
     const template = core.getInput('template');
     const params = parseParams(core.getInput('parameters'));
-    const stackName = core.getInput('stackName');
-    const csName = core.getInput('changeSetName');
+    const stackName = core.getInput('stack');
+    const csName = core.getInput('change-set');
 
     const client = new CloudFormationClient({region: region})
 
@@ -101,5 +101,5 @@ function getIcon(action) {
 }
 
 run()
-    .then(message => core.setOutput('changeSet', message))
+    .then(message => core.setOutput('change-set', message))
     .catch(e => core.setFailed(e));
