@@ -10,7 +10,7 @@ inputs:
   changeSetName:
     description: 'Name of the created ChangeSet'
     required: false
-    default: github-action-${{ github.ref }}
+    default: github-action-${{ github.sha }}
   region:
     description: 'AWS region where the stack is located'
     required: false
