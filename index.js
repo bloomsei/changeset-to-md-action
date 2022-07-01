@@ -18,7 +18,8 @@ async function run() {
 
     const client = new CloudFormationClient({region: region})
 
-    await client.send(createChangeSet(template, params, csName, stackName));
+    const id = await client.send(createChangeSet(template, params, csName, stackName));
+    core.warning(id.Id)
     const describeCommand = new DescribeChangeSetCommand({
         ChangeSetName: csName,
         StackName: stackName
@@ -58,13 +59,14 @@ function createChangeSet(template, params, name, stack) {
  * @param {import('@aws/sdk-cloudformation')/DescribeChangeSetCommandOutput} describe
  */
 function getMessage(describe) {
+    const header = `# Created change set for \`${describe.StackName}\` in  \`${describe.Region}\`\n`
     if (describe.Status === 'FAILED') {
         if (describe.ExecutionStatus === 'UNAVAILABLE') {
-            return '🔵 **NO CHANGES**';
+            return header + '🔵 **NO CHANGES**';
         }
-        return `🔴 **FAILED**: ${describe.StatusReason}`;
+        return header + `🔴 **FAILURE**: ${describe.StatusReason}`;
     }
-    let response = `🟢 **SUCCESS**: ${describe.Status}\n`
+    let response = `${header}🟢 **SUCCESS**: ${describe.Status}\n`
     for (const change of describe.Changes) {
         if (change.ResourceChange) {
             response += getChange(change.ResourceChange);
@@ -80,7 +82,7 @@ function getMessage(describe) {
 function getChange(change) {
     let replaceTag = change.Action === 'Modify' && change.Replacement !== 'False' ? ' - Replacement' : '';
     if (replaceTag && change.Replacement === 'Conditional') replaceTag += ' (Conditional)';
-    return `${getIcon(change.Action)}${change.Action}${replaceTag}: ` +
+    return ` - ${getIcon(change.Action)} ${change.Action}${replaceTag}: ` +
         `**${change.LogicalResourceId}** (${change.ResourceType})\n`
 }
 
