@@ -59,7 +59,7 @@ function createChangeSet(template, params, name, stack) {
  * @param {import('@aws/sdk-cloudformation')/DescribeChangeSetCommandOutput} describe
  */
 function getMessage(describe) {
-    const header = `# Created change set for \`${describe.StackName}\` in  \`${describe.Region}\`\n`
+    const header = `## Created change set for stack: \`${describe.StackName}\`\n`
     if (describe.Status === 'FAILED') {
         if (describe.ExecutionStatus === 'UNAVAILABLE') {
             return header + '🔵 **NO CHANGES**';
