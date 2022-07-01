@@ -67,6 +67,11 @@ function getMessage(describe) {
         return header + `🔴 **FAILURE**: ${describe.StatusReason}`;
     }
     let response = `${header}🟢 **SUCCESS**: ${describe.Status}\n`
+    if (describe.Changes) {
+        response += 'Changes: \n';
+        response += '| Action | Replacement | LogicalId | Type |\n';
+        response += '| --- | --- | --- | --- |'
+    }
     for (const change of describe.Changes) {
         if (change.ResourceChange) {
             response += getChange(change.ResourceChange);
@@ -80,10 +85,8 @@ function getMessage(describe) {
  * @returns {string}
  */
 function getChange(change) {
-    let replaceTag = change.Action === 'Modify' && change.Replacement !== 'False' ? ' - Replacement' : '';
-    if (replaceTag && change.Replacement === 'Conditional') replaceTag += ' (Conditional)';
-    return ` - ${getIcon(change.Action)} ${change.Action}${replaceTag}: ` +
-        `**${change.LogicalResourceId}** (${change.ResourceType})\n`
+    return `| ${getIcon(change.Action)} **${change.Action}$** | ${change.Replacement} | ` +
+        `${change.LogicalResourceId} | (${change.ResourceType}) |\n`
 }
 
 function getIcon(action) {
