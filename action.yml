@@ -1,0 +1,27 @@
+name: 'CloudFormation ChangeSet to markdown'
+description: 'Create a CloudFormation ChangeSet and convert it to markdown.'
+inputs:
+  template:
+    description: 'CloudFormation template; either local path or (S3) URL'
+    required: true
+  stackName:
+    description: 'The name of the stack on which to apply template (must exist already)'
+    required: true
+  changeSetName:
+    description: 'Name of the created ChangeSet'
+    required: false
+    default: ${{ github.ref_name }}
+  region:
+    description: 'AWS region where the stack is located'
+    required: false
+    default: 'us-east-1'
+  parameters:
+    description: 'CloudFormation template parameters in format "key=value,key2=value2,..."'
+    required: false
+    default: ''
+outputs:
+  changeSet:
+    description: 'Markdown representation of created change set'
+runs:
+  using: 'node16'
+  main: 'index.js'
