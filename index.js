@@ -18,8 +18,7 @@ async function run() {
 
     const client = new CloudFormationClient({region: region})
 
-    const id = await client.send(createChangeSet(template, params, csName, stackName));
-    core.warning(id.Id)
+    await client.send(createChangeSet(template, params, csName, stackName));
     const describeCommand = new DescribeChangeSetCommand({
         ChangeSetName: csName,
         StackName: stackName
@@ -68,25 +67,18 @@ function getMessage(describe) {
     }
     let response = `${header}🟢 **SUCCESS**: ${describe.Status}\n`
     if (describe.Changes) {
-        response += 'Changes: \n';
-        response += '| Action | Replacement | LogicalId | Type |\n';
-        response += '| --- | --- | --- | --- |'
+        response += '| Action | Replacement | LogicalId | Type |\n' +
+            '| --- | --- | --- | --- |\n';
     }
     for (const change of describe.Changes) {
         if (change.ResourceChange) {
-            response += getChange(change.ResourceChange);
+            response += `| ${getIcon(change.ResourceChange.Action)} **${change.ResourceChange.Action}** `  +
+                `| ${change.ResourceChange.Replacement} ` +
+                `| ${change.ResourceChange.LogicalResourceId} ` +
+                `| ${change.ResourceChange.ResourceType} |\n`
         }
     }
     return response;
-}
-
-/**
- * @param {ResourceChange} change
- * @returns {string}
- */
-function getChange(change) {
-    return `| ${getIcon(change.Action)} **${change.Action}$** | ${change.Replacement} | ` +
-        `${change.LogicalResourceId} | (${change.ResourceType}) |\n`
 }
 
 function getIcon(action) {
