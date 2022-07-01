@@ -26,7 +26,7 @@ async function run() {
     await waitUntilChangeSetCreateComplete({
         client: client,
         maxWaitTime: 120
-    }, describeCommand.input);
+    }, describeCommand.input).catch(_ => core.debug("Failed creating a change set"));
 
     const response = await client.send(describeCommand);
 
