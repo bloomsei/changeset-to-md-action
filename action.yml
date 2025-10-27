@@ -1,5 +1,11 @@
-name: 'CloudFormation ChangeSet to markdown'
+name: 'CloudFormation ChangeSet as Markdown'
 description: 'Create a CloudFormation ChangeSet and convert it to markdown.'
+author: 'Elayne Bloom'
+
+branding:
+  icon: 'package'
+  color: 'orange'
+
 inputs:
   template:
     description: 'CloudFormation template; either local path or (S3) URL'
@@ -19,9 +25,11 @@ inputs:
     description: 'CloudFormation template parameters in format "key=value,key2=value2,..."'
     required: false
     default: ''
+
 outputs:
   change-set:
     description: 'Markdown representation of created change set'
+
 runs:
   using: 'node16'
   main: 'index.js'

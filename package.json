@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iztoksvetik/changeset-to-markdown.git"
+    "url": "git+https://github.com/bloomsei/changeset-to-markdown.git"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/iztoksvetik/changeset-to-markdown/issues"
+    "url": "https://github.com/bloomsei/changeset-to-markdown/issues"
   },
-  "homepage": "https://github.com/iztoksvetik/changeset-to-markdown#readme",
+  "homepage": "https://github.com/bloomsei/changeset-to-markdown#readme",
   "dependencies": {
     "@actions/core": "^1.8.2",
     "@aws-sdk/client-cloudformation": "^3.107.0"
