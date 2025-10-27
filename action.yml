@@ -31,5 +31,5 @@ outputs:
     description: 'Markdown representation of created change set'
 
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node24'
+  main: 'dist/index.js'

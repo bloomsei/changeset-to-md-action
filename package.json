@@ -6,7 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node index.js",
+    "package": "npx rollup --config rollup.config.js"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,11 @@
   "dependencies": {
     "@actions/core": "^1.8.2",
     "@aws-sdk/client-cloudformation": "^3.107.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "rollup": "^4.52.3"
   }
 }
