@@ -42686,13 +42686,13 @@ function getMessage(describe) {
     }
     let response = `${header}🟢 **SUCCESS**: ${describe.Status}\n`;
     if (describe.Changes) {
-        response += '| Action | Replacement | LogicalId | Type |\n' +
+        response += '| Action | Replacement | Logical Id | Type |\n' +
             '| --- | --- | --- | --- |\n';
     }
     for (const change of describe.Changes) {
         if (change.ResourceChange) {
             response += `| ${getIcon(change.ResourceChange.Action)} **${change.ResourceChange.Action}** `  +
-                `| ${change.ResourceChange.Replacement} ` +
+                `| ${change.ResourceChange.Replacement ?? 'N/A'} ` +
                 `| ${change.ResourceChange.LogicalResourceId} ` +
                 `| ${change.ResourceChange.ResourceType} |\n`;
         }
