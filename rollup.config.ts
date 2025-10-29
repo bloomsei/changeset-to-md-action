@@ -3,16 +3,18 @@
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import typescript from '@rollup/plugin-typescript';
 
 const config = {
-  input: 'src/index.js',
+  input: 'src/index.ts',
   output: {
     esModule: true,
     file: 'dist/index.js',
     format: 'es',
-    sourcemap: true
+    sourcemap: true,
+    inlineDynamicImports: true
   },
-  plugins: [commonjs(), nodeResolve({ preferBuiltins: true }), json()]
+  plugins: [commonjs(), nodeResolve({ preferBuiltins: true }), json(), typescript()]
 }
 
 export default config

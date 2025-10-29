@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Action",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npx",
+      "cwd": "${workspaceRoot}",
+      "args": ["@github/local-action", ".", "src/main.ts", ".env"],
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "vscode-jest-tests.v2",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["jest"],
+      "args": ["--runInBand"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "env": {
+        "NODE_OPTIONS": "--experimental-vm-modules",
+        "NODE_NO_WARNINGS": "1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+    // "sourceMap": true,
+    // "inlineSourceMap": false
+  },
+  "exclude": ["dist", "node_modules"],
+  "include": [
+    "__fixtures__",
+    "__tests__",
+    "src",
+    "eslint.config.mjs",
+    "jest.config.js",
+    "rollup.config.ts"
+  ],
+  "sourceMap": true,
+  "inlineSourceMap": true
+}

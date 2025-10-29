@@ -27,7 +27,7 @@ inputs:
     default: ''
 
 outputs:
-  change-set:
+  markdown:
     description: 'Markdown representation of created change set'
 
 runs:

@@ -2,4 +2,9 @@
 *.iml
 .DS_Store
 node_modules/
+.env
+test/
 
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
