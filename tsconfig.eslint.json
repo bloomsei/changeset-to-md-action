@@ -4,8 +4,6 @@
   "compilerOptions": {
     "allowJs": true,
     "noEmit": true
-    // "sourceMap": true,
-    // "inlineSourceMap": false
   },
   "exclude": ["dist", "node_modules"],
   "include": [

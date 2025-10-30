@@ -27272,7 +27272,7 @@ function parseParameters(input) {
         }
         params.push({
             ParameterKey: kv[0].trim(),
-            ParameterValue: kv[1].trim(),
+            ParameterValue: kv[1].trim()
         });
     }
     return params;
@@ -37549,13 +37549,13 @@ function getCommandInput(config) {
         StackName: config.stackName,
         ChangeSetName: config.changeSetName,
         ChangeSetType: 'UPDATE',
-        Parameters: config.parameters,
+        Parameters: config.parameters
     };
     if (config.template.startsWith('http')) {
         input.TemplateURL = config.template;
     }
     else {
-        input.TemplateBody = require$$1.readFileSync(config.template, "utf-8");
+        input.TemplateBody = require$$1.readFileSync(config.template, 'utf-8');
     }
     return input;
 }
