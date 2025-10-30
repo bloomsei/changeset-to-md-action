@@ -1,0 +1,52 @@
+import { jest } from '@jest/globals';
+
+
+import {
+    CloudFormationClient,
+    CreateChangeSetCommand,
+    DeleteChangeSetCommand,
+    DescribeChangeSetCommand
+} from '@aws-sdk/client-cloudformation';
+import { mockClient } from 'aws-sdk-client-mock';
+import { Configuration, getChangeSet } from '../src/changeset.js';
+
+jest.unstable_mockModule('@aws-sdk/client-cloudformation', () => {
+    const originalModule = jest.requireActual('@aws-sdk/client-cloudformation') as object;
+    return {
+        waitUntilChangeSetCreateComplete: jest.fn(),
+        ...originalModule,
+    };
+});
+
+const cfnMock = mockClient(CloudFormationClient);
+
+describe('getChangeSet', () => {
+    beforeEach(() => {
+        cfnMock.reset();
+    });
+
+    it('should create, describe and delete a changeset', async () => {
+        const mockDescribeResponse = {
+            ChangeSetName: 'test-changeset',
+            Changes: []
+        };
+
+        cfnMock
+            .on(CreateChangeSetCommand).resolves({})
+            .on(DescribeChangeSetCommand).resolves(mockDescribeResponse)
+            .on(DeleteChangeSetCommand).resolves({});
+
+        const config: Configuration = {
+            region: 'us-east-1',
+            stackName: 'test-stack',
+            changeSetName: 'test-changeset',
+            template: 'https://example.com/template.yaml',
+            parameters: []
+        };
+
+        const result = await getChangeSet(config);
+
+        expect(result).toEqual(mockDescribeResponse);
+        expect(cfnMock.calls()).toHaveLength(3);
+    });
+});

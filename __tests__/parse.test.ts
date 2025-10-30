@@ -6,7 +6,7 @@ describe('parseParameters', () => {
     const result = parseParameters(input);
     expect(result).toEqual([
       { ParameterKey: 'Key1', ParameterValue: 'Value1' },
-      { ParameterKey: 'Key2', ParameterValue: 'Value2' },
+      { ParameterKey: 'Key2', ParameterValue: 'Value2' }
     ]);
   });
 
@@ -15,7 +15,7 @@ describe('parseParameters', () => {
     const result = parseParameters(input);
     expect(result).toEqual([
       { ParameterKey: 'Key1', ParameterValue: 'Value1' },
-      { ParameterKey: 'Key2', ParameterValue: 'Value2' },
+      { ParameterKey: 'Key2', ParameterValue: 'Value2' }
     ]);
   });
 

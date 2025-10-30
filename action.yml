@@ -11,7 +11,8 @@ inputs:
     description: 'CloudFormation template; either local path or (S3) URL'
     required: true
   stack:
-    description: 'The name of the stack on which to apply template (must exist already)'
+    description:
+      'The name of the stack on which to apply template (must exist already)'
     required: true
   change-set:
     description: 'Name of the created ChangeSet'
@@ -22,7 +23,8 @@ inputs:
     required: false
     default: 'us-east-1'
   parameters:
-    description: 'CloudFormation template parameters in format "key=value,key2=value2,..."'
+    description:
+      'CloudFormation template parameters in format "key=value,key2=value2,..."'
     required: false
     default: ''
 

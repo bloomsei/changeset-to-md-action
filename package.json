@@ -6,6 +6,8 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 npx jest",
+    "format:write": "npx prettier --write .",
+    "format:check": "npx prettier --check .",
     "start": "node index.js",
     "package": "npx rollup --config rollup.config.ts --configPlugin @rollup/plugin-typescript"
   },
