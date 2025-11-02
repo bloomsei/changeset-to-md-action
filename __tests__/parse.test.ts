@@ -28,4 +28,11 @@ describe('parseParameters', () => {
     const input = 'Key1=Value1Key2=Value2';
     expect(() => parseParameters(input)).toThrow();
   });
+
+  test('returns empty array for empty input', () => {
+    const input = '';
+    const result = parseParameters(input);
+    expect(result).toEqual([]);
+  });
+
 });

@@ -7,6 +7,9 @@ import { Parameter } from '@aws-sdk/client-cloudformation';
  */
 export function parseParameters(input: string): Parameter[] {
   const params: Parameter[] = [];
+  if (input.trim() === '') {
+    return params;
+  }
 
   const items = input.split(',');
   for (const pair of items) {
