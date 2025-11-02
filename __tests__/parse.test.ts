@@ -34,5 +34,4 @@ describe('parseParameters', () => {
     const result = parseParameters(input);
     expect(result).toEqual([]);
   });
-
 });

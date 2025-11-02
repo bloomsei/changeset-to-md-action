@@ -47,11 +47,11 @@ function getIcon(action: ChangeAction | undefined): string {
     case ChangeAction.Add:
       return '✳️';
     case ChangeAction.Dynamic:
-      return '*️⃣';
-    case ChangeAction.Import:
-      return '⏩';
-    case ChangeAction.Modify:
       return '🔄';
+    case ChangeAction.Import:
+      return '⬇️';
+    case ChangeAction.Modify:
+      return '🔀';
     case ChangeAction.Remove:
       return '❌';
   }

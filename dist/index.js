@@ -27264,6 +27264,9 @@ var coreExports = requireCore();
  */
 function parseParameters(input) {
     const params = [];
+    if (input.trim() === '') {
+        return params;
+    }
     const items = input.split(',');
     for (const pair of items) {
         const kv = pair.split('=');
@@ -37597,11 +37600,11 @@ function getIcon(action) {
         case ChangeAction.Add:
             return '✳️';
         case ChangeAction.Dynamic:
-            return '*️⃣';
-        case ChangeAction.Import:
-            return '⏩';
-        case ChangeAction.Modify:
             return '🔄';
+        case ChangeAction.Import:
+            return '⬇️';
+        case ChangeAction.Modify:
+            return '🔀';
         case ChangeAction.Remove:
             return '❌';
     }
