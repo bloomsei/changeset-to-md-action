@@ -121,6 +121,5 @@ else
 	echo -e "Tags: ${BOLD_GREEN}$latest_major_release_tag${OFF} and ${BOLD_GREEN}$new_tag${OFF} pushed to remote"
 fi
 
-
 # Completed
 echo -e "${BOLD_GREEN}Done!${OFF}"
