@@ -4,7 +4,7 @@
 ![CI](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/ci.yml/badge.svg)
 ![Check dist/](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/check-dist.yml/badge.svg)
 ![CodeQL](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/codeql-analysis.yml/badge.svg)
-![Coverage](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/coverage.yml/badge.svg)
+![Coverage](./badges/coverage.svg)
 
 A GitHub Action that creates an AWS CloudFormation ChangeSet and converts it to
 a formatted Markdown table, perfect for pull request comments and workflow
