@@ -97,7 +97,7 @@ The action generates Markdown in the following format:
 
 🟢 **SUCCESS**: CREATE_COMPLETE
 
-| Action        | Replacement | Logical Id       | Type                    |
+| Action        | Replacement | Logical ID       | Type                    |
 | ------------- | ----------- | ---------------- | ----------------------- |
 | ✳️ **Add**    | N/A         | MyS3Bucket       | AWS::S3::Bucket         |
 | 🔀 **Modify** | False       | MyLambdaFunction | AWS::Lambda::Function   |
@@ -110,7 +110,7 @@ The action generates Markdown in the following format:
 | ----------- | ------------------------------------------------------------------ |
 | Action      | What will happen with the resource                                 |
 | Replacement | Whether the resource will be replaced (True/False/N/A)             |
-| Logical Id  | The logical ID of the resource in the template - what you named it |
+| Logical ID  | The logical ID of the resource in the template - what you named it |
 | Type        | The AWS resource type (e.g., AWS::S3::Bucket)                      |
 
 > [!WARNING] Even if the ChangeSet creation is successful, individual resource

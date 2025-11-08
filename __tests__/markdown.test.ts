@@ -44,7 +44,7 @@ describe('generateMarkdownFromChangeSet', () => {
 
     expect(result).toContain('## Created change set for stack: `test-stack`');
     expect(result).toContain('🟢 **SUCCESS**: CREATE_COMPLETE');
-    expect(result).toContain('| Action | Replacement | Logical Id | Type |');
+    expect(result).toContain('| Action | Replacement | Logical ID | Type |');
     expect(result).toContain('✳️ **Add**');
     expect(result).toContain('MyS3Bucket');
     expect(result).toContain('AWS::S3::Bucket');

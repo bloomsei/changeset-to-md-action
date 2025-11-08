@@ -37581,7 +37581,7 @@ function getStatusMessage(changeSet) {
     return `🟢 **SUCCESS**: ${changeSet.Status}\n`;
 }
 function getChanges(changes) {
-    let markdown = '| Action | Replacement | Logical Id | Type |\n';
+    let markdown = '| Action | Replacement | Logical ID | Type |\n';
     markdown += '| --- | --- | --- | --- |\n';
     for (const change of changes) {
         if (change.ResourceChange) {

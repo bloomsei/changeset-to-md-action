@@ -28,7 +28,7 @@ function getStatusMessage(changeSet: DescribeChangeSetCommandOutput): string {
 }
 
 function getChanges(changes: Change[]): string {
-  let markdown = '| Action | Replacement | Logical Id | Type |\n';
+  let markdown = '| Action | Replacement | Logical ID | Type |\n';
   markdown += '| --- | --- | --- | --- |\n';
   for (const change of changes) {
     if (change.ResourceChange) {
