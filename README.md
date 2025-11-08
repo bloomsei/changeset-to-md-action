@@ -24,7 +24,8 @@ summaries.
 
 ### Basic Example
 
-> [!IMPORTANT] This action uses the AWS JavaScript SDK v3, so ensure your AWS
+> [!IMPORTANT]
+> This action uses the AWS JavaScript SDK v3, so ensure your AWS
 > credentials are configured in your workflow. This can be done using the
 > [aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials)
 
@@ -113,7 +114,8 @@ The action generates Markdown in the following format:
 | Logical ID  | The logical ID of the resource in the template - what you named it |
 | Type        | The AWS resource type (e.g., AWS::S3::Bucket)                      |
 
-> [!WARNING] Even if the ChangeSet creation is successful, individual resource
+> [!WARNING]
+> Even if the ChangeSet creation is successful, individual resource
 > changes may still fail during stack update. Reasons could be: missing quotas
 > or insufficient permissions.
 

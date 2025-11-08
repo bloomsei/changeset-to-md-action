@@ -13,3 +13,7 @@ arrowParens: always
 proseWrap: always
 htmlWhitespaceSensitivity: css
 endOfLine: lf
+overrides:
+  - files: '*.md'
+    options:
+      proseWrap: preserve
