@@ -37542,7 +37542,9 @@ async function getChangeSet(config) {
     await waitUntilChangeSetCreateComplete({
         client,
         maxWaitTime: 120
-    }, describeCommandInput);
+    }, describeCommandInput).catch(() => {
+        // Ignore errors here; we'll get the status in the next step
+    });
     const describeResponse = await client.send(new DescribeChangeSetCommand(describeCommandInput));
     await client.send(new DeleteChangeSetCommand(describeCommandInput));
     return describeResponse;

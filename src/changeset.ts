@@ -35,7 +35,9 @@ export async function getChangeSet(
       maxWaitTime: 120
     },
     describeCommandInput
-  );
+  ).catch(() => {
+    // Ignore errors here; we'll get the status in the next step
+  });
 
   const describeResponse = await client.send(
     new DescribeChangeSetCommand(describeCommandInput)
