@@ -3,7 +3,7 @@
 ![Linter](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/linter.yml/badge.svg)
 ![CI](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/ci.yml/badge.svg)
 ![Check dist/](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/check-dist.yml/badge.svg)
-![CodeQL](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/codeql-analysis.yml/badge.svg)
+![CodeQL](https://github.com/bloomsei/changeset-to-md-action/actions/workflows/codeql.yml/badge.svg)
 ![Coverage](./badges/coverage.svg)
 
 A GitHub Action that creates an AWS CloudFormation ChangeSet and converts it to
