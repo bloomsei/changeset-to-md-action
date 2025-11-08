@@ -61,7 +61,8 @@ describe('generateMarkdownFromChangeSet', () => {
       StackName: 'test-stack',
       Status: ChangeSetStatus.FAILED,
       ExecutionStatus: ExecutionStatus.UNAVAILABLE,
-      StatusReason: 'No updates are to be performed.'
+      StatusReason: 'No updates are to be performed.',
+      Changes: []
     };
 
     const result = generateMarkdownFromChangeSet(changeSet);
@@ -69,7 +70,7 @@ describe('generateMarkdownFromChangeSet', () => {
     expect(result).toContain('## Created change set for stack: `test-stack`');
     expect(result).toContain('🔵 **NO CHANGES**');
     expect(result).not.toContain(
-      '| Action | Replacement | Logical Id | Type |'
+      '| Action | Replacement | Logical ID | Type |'
     );
   });
 

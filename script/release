@@ -121,13 +121,6 @@ else
 	echo -e "Tags: ${BOLD_GREEN}$latest_major_release_tag${OFF} and ${BOLD_GREEN}$new_tag${OFF} pushed to remote"
 fi
 
-# 10. If this is a major release, create a 'releases/v#' branch and push
-if [ $is_major_release = 'yes' ]; then
-	git branch "releases/$new_major_release_tag" "$new_major_release_tag"
-	echo -e "Branch: ${BOLD_BLUE}releases/$new_major_release_tag${OFF} created from ${BOLD_BLUE}$new_major_release_tag${OFF} tag"
-	git push --set-upstream $git_remote "releases/$new_major_release_tag"
-	echo -e "Branch: ${BOLD_GREEN}releases/$new_major_release_tag${OFF} pushed to remote"
-fi
 
 # Completed
 echo -e "${BOLD_GREEN}Done!${OFF}"

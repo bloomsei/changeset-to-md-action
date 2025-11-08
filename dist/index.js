@@ -37568,7 +37568,7 @@ function getCommandInput(config) {
 function generateMarkdownFromChangeSet(changeSet) {
     let markdown = `## Created change set for stack: \`${changeSet.StackName}\`\n`;
     markdown += getStatusMessage(changeSet);
-    if (changeSet.Changes) {
+    if (changeSet.Changes && changeSet.Changes.length > 0) {
         markdown += getChanges(changeSet.Changes);
     }
     return markdown;
