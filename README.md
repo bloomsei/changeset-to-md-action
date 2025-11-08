@@ -24,6 +24,10 @@ summaries.
 
 ### Basic Example
 
+> [!IMPORTANT] This action uses the AWS JavaScript SDK v3, so ensure your AWS
+> credentials are configured in your workflow. This can be done using the
+> [aws-actions/configure-aws-credentials](https://github.com/aws-actions/configure-aws-credentials)
+
 ```yaml
 name: Preview CloudFormation Changes
 on: [pull_request]
@@ -51,42 +55,19 @@ jobs:
         with:
           stack: my-stack-name
           template: ./cloudformation/template.yaml
-          region: us-east-1
 
       - name: Comment on PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
+        env:
+          MARKDOWN: ${{ steps.changeset.outputs.markdown }}
         with:
           script: |
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '${{ steps.changeset.outputs.markdown }}'
+              body: process.env.MARKDOWN
             })
-```
-
-### With Parameters
-
-```yaml
-- name: Generate ChangeSet with Parameters
-  uses: bloomsei/changeset-to-md-action@v1
-  with:
-    stack: my-stack-name
-    template: ./cloudformation/template.yaml
-    region: us-west-2
-    parameters: Environment=production,InstanceType=t3.medium,EnableLogging=true
-    change-set: preview-${{ github.run_id }}
-```
-
-### With S3 Template URL
-
-```yaml
-- name: Generate ChangeSet from S3
-  uses: bloomsei/changeset-to-md-action@v1
-  with:
-    stack: my-stack-name
-    template: https://s3.amazonaws.com/my-bucket/template.yaml
-    region: eu-west-1
 ```
 
 ## Inputs
@@ -119,30 +100,26 @@ The action generates Markdown in the following format:
 | Action        | Replacement | Logical Id       | Type                    |
 | ------------- | ----------- | ---------------- | ----------------------- |
 | ✳️ **Add**    | N/A         | MyS3Bucket       | AWS::S3::Bucket         |
-| 🔄 **Modify** | False       | MyLambdaFunction | AWS::Lambda::Function   |
+| 🔀 **Modify** | False       | MyLambdaFunction | AWS::Lambda::Function   |
 | ❌ **Remove** | N/A         | OldSecurityGroup | AWS::EC2::SecurityGroup |
 ```
 
-### No Changes Example
+### ChangeSet Table Legend
 
-```markdown
-## Created change set for stack: `my-stack-name`
+| Title       | Meaning                                                            |
+| ----------- | ------------------------------------------------------------------ |
+| Action      | What will happen with the resource                                 |
+| Replacement | Whether the resource will be replaced (True/False/N/A)             |
+| Logical Id  | The logical ID of the resource in the template - what you named it |
+| Type        | The AWS resource type (e.g., AWS::S3::Bucket)                      |
 
-🔵 **NO CHANGES**
-```
-
-### Change Type Icons
-
-- ✳️ **Add** - New resource will be created
-- 🔄 **Modify** - Existing resource will be modified
-- ❌ **Remove** - Resource will be deleted
-- \*️⃣ **Dynamic** - Change is conditional
-- ⏩ **Import** - Resource will be imported
+> [!WARNING] Even if the ChangeSet creation is successful, individual resource
+> changes may still fail during stack update. Reasons could be: missing quotas
+> or insufficient permissions.
 
 ## Prerequisites
 
-- The CloudFormation stack must already exist (use `CREATE_COMPLETE` or
-  `UPDATE_COMPLETE` state)
+- The CloudFormation stack must already exist
 - AWS credentials must be configured with appropriate permissions:
   - `cloudformation:CreateChangeSet`
   - `cloudformation:DescribeChangeSet`
