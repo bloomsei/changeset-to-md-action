@@ -39,7 +39,7 @@
   "homepage": "https://github.com/bloomsei/changeset-to-markdown#readme",
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@aws-sdk/client-cloudformation": "^3.917.0"
+    "@aws-sdk/client-cloudformation": "^3.927.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.4.1",
