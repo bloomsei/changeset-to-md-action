@@ -20,7 +20,7 @@ import require$$0$5 from 'node:events';
 import require$$0$7 from 'worker_threads';
 import require$$2$1 from 'perf_hooks';
 import require$$5 from 'util/types';
-import require$$4$1 from 'async_hooks';
+import require$$4$1, { AsyncLocalStorage } from 'async_hooks';
 import require$$1$3 from 'console';
 import require$$1$4, { parse as parse$1 } from 'url';
 import require$$3$1 from 'zlib';
@@ -27488,106 +27488,66 @@ const recursionDetectionMiddlewareOptions = {
     priority: "low",
 };
 
-var invokeStore = {};
-
-var hasRequiredInvokeStore;
-
-function requireInvokeStore () {
-	if (hasRequiredInvokeStore) return invokeStore;
-	hasRequiredInvokeStore = 1;
-	Object.defineProperty(invokeStore, "__esModule", { value: true });
-	invokeStore.InvokeStore = void 0;
-	const async_hooks_1 = require$$4$1;
-	// AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA provides an escape hatch since we're modifying the global object which may not be expected to a customer's handler.
-	const noGlobalAwsLambda = process.env["AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA"] === "1" ||
-	    process.env["AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA"] === "true";
-	if (!noGlobalAwsLambda) {
-	    globalThis.awslambda = globalThis.awslambda || {};
-	}
-	const PROTECTED_KEYS = {
-	    REQUEST_ID: Symbol("_AWS_LAMBDA_REQUEST_ID"),
-	    X_RAY_TRACE_ID: Symbol("_AWS_LAMBDA_X_RAY_TRACE_ID"),
-	};
-	/**
-	 * InvokeStore implementation class
-	 */
-	class InvokeStoreImpl {
-	    static storage = new async_hooks_1.AsyncLocalStorage();
-	    // Protected keys for Lambda context fields
-	    static PROTECTED_KEYS = PROTECTED_KEYS;
-	    /**
-	     * Initialize and run code within an invoke context
-	     */
-	    static run(context, fn) {
-	        return this.storage.run({ ...context }, fn);
-	    }
-	    /**
-	     * Get the complete current context
-	     */
-	    static getContext() {
-	        return this.storage.getStore();
-	    }
-	    /**
-	     * Get a specific value from the context by key
-	     */
-	    static get(key) {
-	        const context = this.storage.getStore();
-	        return context?.[key];
-	    }
-	    /**
-	     * Set a custom value in the current context
-	     * Protected Lambda context fields cannot be overwritten
-	     */
-	    static set(key, value) {
-	        if (this.isProtectedKey(key)) {
-	            throw new Error(`Cannot modify protected Lambda context field`);
-	        }
-	        const context = this.storage.getStore();
-	        if (context) {
-	            context[key] = value;
-	        }
-	    }
-	    /**
-	     * Get the current request ID
-	     */
-	    static getRequestId() {
-	        return this.get(this.PROTECTED_KEYS.REQUEST_ID) ?? "-";
-	    }
-	    /**
-	     * Get the current X-ray trace ID
-	     */
-	    static getXRayTraceId() {
-	        return this.get(this.PROTECTED_KEYS.X_RAY_TRACE_ID);
-	    }
-	    /**
-	     * Check if we're currently within an invoke context
-	     */
-	    static hasContext() {
-	        return this.storage.getStore() !== undefined;
-	    }
-	    /**
-	     * Check if a key is protected (readonly Lambda context field)
-	     */
-	    static isProtectedKey(key) {
-	        return (key === this.PROTECTED_KEYS.REQUEST_ID ||
-	            key === this.PROTECTED_KEYS.X_RAY_TRACE_ID);
-	    }
-	}
-	let instance;
-	if (!noGlobalAwsLambda && globalThis.awslambda?.InvokeStore) {
-	    instance = globalThis.awslambda.InvokeStore;
-	}
-	else {
-	    instance = InvokeStoreImpl;
-	    if (!noGlobalAwsLambda && globalThis.awslambda) {
-	        globalThis.awslambda.InvokeStore = instance;
-	    }
-	}
-	invokeStore.InvokeStore = instance;
-	return invokeStore;
+const noGlobalAwsLambda = process.env["AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA"] === "1" ||
+    process.env["AWS_LAMBDA_NODEJS_NO_GLOBAL_AWSLAMBDA"] === "true";
+if (!noGlobalAwsLambda) {
+    globalThis.awslambda = globalThis.awslambda || {};
 }
-
-var invokeStoreExports = requireInvokeStore();
+const PROTECTED_KEYS = {
+    REQUEST_ID: Symbol("_AWS_LAMBDA_REQUEST_ID"),
+    X_RAY_TRACE_ID: Symbol("_AWS_LAMBDA_X_RAY_TRACE_ID"),
+    TENANT_ID: Symbol("_AWS_LAMBDA_TENANT_ID"),
+};
+class InvokeStoreImpl {
+    static storage = new AsyncLocalStorage();
+    static PROTECTED_KEYS = PROTECTED_KEYS;
+    static run(context, fn) {
+        return this.storage.run({ ...context }, fn);
+    }
+    static getContext() {
+        return this.storage.getStore();
+    }
+    static get(key) {
+        const context = this.storage.getStore();
+        return context?.[key];
+    }
+    static set(key, value) {
+        if (this.isProtectedKey(key)) {
+            throw new Error(`Cannot modify protected Lambda context field`);
+        }
+        const context = this.storage.getStore();
+        if (context) {
+            context[key] = value;
+        }
+    }
+    static getRequestId() {
+        return this.get(this.PROTECTED_KEYS.REQUEST_ID) ?? "-";
+    }
+    static getXRayTraceId() {
+        return this.get(this.PROTECTED_KEYS.X_RAY_TRACE_ID);
+    }
+    static getTenantId() {
+        return this.get(this.PROTECTED_KEYS.TENANT_ID);
+    }
+    static hasContext() {
+        return this.storage.getStore() !== undefined;
+    }
+    static isProtectedKey(key) {
+        return (key === this.PROTECTED_KEYS.REQUEST_ID ||
+            key === this.PROTECTED_KEYS.X_RAY_TRACE_ID);
+    }
+}
+let instance;
+if (!noGlobalAwsLambda && globalThis.awslambda?.InvokeStore) {
+    instance = globalThis.awslambda.InvokeStore;
+}
+else {
+    instance = InvokeStoreImpl;
+    if (!noGlobalAwsLambda && globalThis.awslambda) {
+        globalThis.awslambda.InvokeStore = instance;
+    }
+}
+const InvokeStore = instance;
 
 const TRACE_ID_HEADER_NAME = "X-Amzn-Trace-Id";
 const ENV_LAMBDA_FUNCTION_NAME = "AWS_LAMBDA_FUNCTION_NAME";
@@ -27604,7 +27564,7 @@ const recursionDetectionMiddleware = () => (next) => async (args) => {
     }
     const functionName = process.env[ENV_LAMBDA_FUNCTION_NAME];
     const traceIdFromEnv = process.env[ENV_TRACE_ID];
-    const traceIdFromInvokeStore = invokeStoreExports.InvokeStore.getXRayTraceId();
+    const traceIdFromInvokeStore = InvokeStore.getXRayTraceId();
     const traceId = traceIdFromInvokeStore ?? traceIdFromEnv;
     const nonEmptyString = (str) => typeof str === "string" && str.length > 0;
     if (nonEmptyString(functionName) && nonEmptyString(traceId)) {
@@ -28080,12 +28040,12 @@ const setSocketTimeout = (request, reject, timeoutInMs = 0) => {
 };
 
 const MIN_WAIT_TIME = 6_000;
-async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN_WAIT_TIME) {
+async function writeRequestBody(httpRequest, request, maxContinueTimeoutMs = MIN_WAIT_TIME, externalAgent = false) {
     const headers = request.headers ?? {};
     const expect = headers.Expect || headers.expect;
     let timeoutId = -1;
     let sendBody = true;
-    if (expect === "100-continue") {
+    if (!externalAgent && expect === "100-continue") {
         sendBody = await Promise.race([
             new Promise((resolve) => {
                 timeoutId = Number(timing.setTimeout(() => resolve(true), Math.max(MIN_WAIT_TIME, maxContinueTimeoutMs)));
@@ -28138,6 +28098,7 @@ class NodeHttpHandler {
     config;
     configProvider;
     socketWarningTimestamp = 0;
+    externalAgent = false;
     metadata = { handlerProtocol: "http/1.1" };
     static create(instanceOrOptions) {
         if (typeof instanceOrOptions?.handle === "function") {
@@ -28194,12 +28155,14 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             throwOnRequestTimeout,
             httpAgent: (() => {
                 if (httpAgent instanceof Agent$1 || typeof httpAgent?.destroy === "function") {
+                    this.externalAgent = true;
                     return httpAgent;
                 }
                 return new Agent$1({ keepAlive, maxSockets, ...httpAgent });
             })(),
             httpsAgent: (() => {
                 if (httpsAgent instanceof Agent || typeof httpsAgent?.destroy === "function") {
+                    this.externalAgent = true;
                     return httpsAgent;
                 }
                 return new Agent({ keepAlive, maxSockets, ...httpsAgent });
@@ -28239,7 +28202,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
             const headers = request.headers ?? {};
             const expectContinue = (headers.Expect ?? headers.expect) === "100-continue";
             let agent = isSSL ? config.httpsAgent : config.httpAgent;
-            if (expectContinue) {
+            if (expectContinue && !this.externalAgent) {
                 agent = new (isSSL ? Agent : Agent$1)({
                     keepAlive: false,
                     maxSockets: Infinity,
@@ -28323,7 +28286,7 @@ or increase socketAcquisitionWarningTimeout=(millis) in the NodeHttpHandler conf
                     keepAliveMsecs: httpAgent.keepAliveMsecs,
                 }));
             }
-            writeRequestBodyPromise = writeRequestBody(req, request, effectiveRequestTimeout).catch((e) => {
+            writeRequestBodyPromise = writeRequestBody(req, request, effectiveRequestTimeout, this.externalAgent).catch((e) => {
                 timeouts.forEach(timing.clearTimeout);
                 return _reject(e);
             });
@@ -30450,7 +30413,7 @@ const memoize = (provider, isExpired, requiresRefresh) => {
         }
         return resolved;
     };
-    if (isExpired === undefined) {
+    {
         return async (options) => {
             if (!hasResult || options?.forceRefresh) {
                 resolved = await coalesceProvider();
@@ -30458,23 +30421,6 @@ const memoize = (provider, isExpired, requiresRefresh) => {
             return resolved;
         };
     }
-    return async (options) => {
-        if (!hasResult || options?.forceRefresh) {
-            resolved = await coalesceProvider();
-        }
-        if (isConstant) {
-            return resolved;
-        }
-        if (requiresRefresh && !requiresRefresh(resolved)) {
-            isConstant = true;
-            return resolved;
-        }
-        if (isExpired(resolved)) {
-            await coalesceProvider();
-            return resolved;
-        }
-        return resolved;
-    };
 };
 
 const ALGORITHM_QUERY_PARAM = "X-Amz-Algorithm";
@@ -33758,8 +33704,8 @@ const USER_AGENT = "user-agent";
 const X_AMZ_USER_AGENT = "x-amz-user-agent";
 const SPACE = " ";
 const UA_NAME_SEPARATOR = "/";
-const UA_NAME_ESCAPE_REGEX = /[^\!\$\%\&\'\*\+\-\.\^\_\`\|\~\d\w]/g;
-const UA_VALUE_ESCAPE_REGEX = /[^\!\$\%\&\'\*\+\-\.\^\_\`\|\~\d\w\#]/g;
+const UA_NAME_ESCAPE_REGEX = /[^!$%&'*+\-.^_`|~\w]/g;
+const UA_VALUE_ESCAPE_REGEX = /[^!$%&'*+\-.^_`|~\w#]/g;
 const UA_ESCAPE_CHAR = "-";
 
 const BYTE_LIMIT = 1024;
@@ -33795,7 +33741,7 @@ const userAgentMiddleware = (options) => (next, context) => async (args) => {
     const customUserAgent = options?.customUserAgent?.map(escapeUserAgent) || [];
     const appId = await options.userAgentAppId();
     if (appId) {
-        defaultUserAgent.push(escapeUserAgent([`app/${appId}`]));
+        defaultUserAgent.push(escapeUserAgent([`app`, `${appId}`]));
     }
     const sdkUserAgentValue = ([])
         .concat([...defaultUserAgent, ...userAgent, ...customUserAgent])
@@ -33906,7 +33852,12 @@ const NODE_REGION_CONFIG_FILE_OPTIONS = {
 const validRegions = new Set();
 const checkRegion = (region, check = isValidHostLabel) => {
     if (!validRegions.has(region) && !check(region)) {
-        throw new Error(`Region not accepted: region="${region}" is not a valid hostname component.`);
+        if (region === "*") {
+            console.warn(`@smithy/config-resolver WARN - Please use the caller region instead of "*". See "sigv4a" in https://github.com/aws/aws-sdk-js-v3/blob/main/supplemental-docs/CLIENTS.md.`);
+        }
+        else {
+            throw new Error(`Region not accepted: region="${region}" is not a valid hostname component.`);
+        }
     }
     else {
         validRegions.add(region);
@@ -35016,7 +34967,7 @@ const commonParams$3 = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version$2 = "3.917.0";
+var version$2 = "3.927.0";
 var packageInfo$2 = {
 	version: version$2};
 
@@ -35077,17 +35028,73 @@ const remoteProvider = async (init) => {
     return fromInstanceMetadata(init);
 };
 
+function memoizeChain(providers, treatAsExpired) {
+    const chain = internalCreateChain(providers);
+    let activeLock;
+    let passiveLock;
+    let credentials;
+    const provider = async (options) => {
+        if (options?.forceRefresh) {
+            return await chain(options);
+        }
+        if (credentials?.expiration) {
+            if (credentials?.expiration?.getTime() < Date.now()) {
+                credentials = undefined;
+            }
+        }
+        if (activeLock) {
+            await activeLock;
+        }
+        else if (!credentials || treatAsExpired?.(credentials)) {
+            if (credentials) {
+                if (!passiveLock) {
+                    passiveLock = chain(options).then((c) => {
+                        credentials = c;
+                        passiveLock = undefined;
+                    });
+                }
+            }
+            else {
+                activeLock = chain(options).then((c) => {
+                    credentials = c;
+                    activeLock = undefined;
+                });
+                return provider(options);
+            }
+        }
+        return credentials;
+    };
+    return provider;
+}
+const internalCreateChain = (providers) => async (awsIdentityProperties) => {
+    let lastProviderError;
+    for (const provider of providers) {
+        try {
+            return await provider(awsIdentityProperties);
+        }
+        catch (err) {
+            lastProviderError = err;
+            if (err?.tryNextLink) {
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw lastProviderError;
+};
+
 let multipleCredentialSourceWarningEmitted = false;
-const defaultProvider = (init = {}) => memoize(chain(async () => {
-    const profile = init.profile ?? process.env[ENV_PROFILE];
-    if (profile) {
-        const envStaticCredentialsAreSet = process.env[ENV_KEY] && process.env[ENV_SECRET];
-        if (envStaticCredentialsAreSet) {
-            if (!multipleCredentialSourceWarningEmitted) {
-                const warnFn = init.logger?.warn && init.logger?.constructor?.name !== "NoOpLogger"
-                    ? init.logger.warn.bind(init.logger)
-                    : console.warn;
-                warnFn(`@aws-sdk/credential-provider-node - defaultProvider::fromEnv WARNING:
+const defaultProvider = (init = {}) => memoizeChain([
+    async () => {
+        const profile = init.profile ?? process.env[ENV_PROFILE];
+        if (profile) {
+            const envStaticCredentialsAreSet = process.env[ENV_KEY] && process.env[ENV_SECRET];
+            if (envStaticCredentialsAreSet) {
+                if (!multipleCredentialSourceWarningEmitted) {
+                    const warnFn = init.logger?.warn && init.logger?.constructor?.name !== "NoOpLogger"
+                        ? init.logger.warn.bind(init.logger)
+                        : console.warn;
+                    warnFn(`@aws-sdk/credential-provider-node - defaultProvider::fromEnv WARNING:
     Multiple credential sources detected: 
     Both AWS_PROFILE and the pair AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY static credentials are set.
     This SDK will proceed with the AWS_PROFILE value.
@@ -35096,46 +35103,52 @@ const defaultProvider = (init = {}) => memoize(chain(async () => {
     Please ensure that your environment only sets either the AWS_PROFILE or the
     AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY pair.
 `);
-                multipleCredentialSourceWarningEmitted = true;
+                    multipleCredentialSourceWarningEmitted = true;
+                }
             }
+            throw new CredentialsProviderError("AWS_PROFILE is set, skipping fromEnv provider.", {
+                logger: init.logger,
+                tryNextLink: true,
+            });
         }
-        throw new CredentialsProviderError("AWS_PROFILE is set, skipping fromEnv provider.", {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromEnv");
+        return fromEnv(init)();
+    },
+    async (awsIdentityProperties) => {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromSSO");
+        const { ssoStartUrl, ssoAccountId, ssoRegion, ssoRoleName, ssoSession } = init;
+        if (!ssoStartUrl && !ssoAccountId && !ssoRegion && !ssoRoleName && !ssoSession) {
+            throw new CredentialsProviderError("Skipping SSO provider in default chain (inputs do not include SSO fields).", { logger: init.logger });
+        }
+        const { fromSSO } = await Promise.resolve().then(function () { return index$5; });
+        return fromSSO(init)(awsIdentityProperties);
+    },
+    async (awsIdentityProperties) => {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromIni");
+        const { fromIni } = await Promise.resolve().then(function () { return index$4; });
+        return fromIni(init)(awsIdentityProperties);
+    },
+    async (awsIdentityProperties) => {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromProcess");
+        const { fromProcess } = await Promise.resolve().then(function () { return index$3; });
+        return fromProcess(init)(awsIdentityProperties);
+    },
+    async (awsIdentityProperties) => {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromTokenFile");
+        const { fromTokenFile } = await Promise.resolve().then(function () { return index$2; });
+        return fromTokenFile(init)(awsIdentityProperties);
+    },
+    async () => {
+        init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::remoteProvider");
+        return (await remoteProvider(init))();
+    },
+    async () => {
+        throw new CredentialsProviderError("Could not load credentials from any providers", {
+            tryNextLink: false,
             logger: init.logger,
-            tryNextLink: true,
         });
-    }
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromEnv");
-    return fromEnv(init)();
-}, async () => {
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromSSO");
-    const { ssoStartUrl, ssoAccountId, ssoRegion, ssoRoleName, ssoSession } = init;
-    if (!ssoStartUrl && !ssoAccountId && !ssoRegion && !ssoRoleName && !ssoSession) {
-        throw new CredentialsProviderError("Skipping SSO provider in default chain (inputs do not include SSO fields).", { logger: init.logger });
-    }
-    const { fromSSO } = await Promise.resolve().then(function () { return index$5; });
-    return fromSSO(init)();
-}, async () => {
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromIni");
-    const { fromIni } = await Promise.resolve().then(function () { return index$4; });
-    return fromIni(init)();
-}, async () => {
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromProcess");
-    const { fromProcess } = await Promise.resolve().then(function () { return index$3; });
-    return fromProcess(init)();
-}, async () => {
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::fromTokenFile");
-    const { fromTokenFile } = await Promise.resolve().then(function () { return index$2; });
-    return fromTokenFile(init)();
-}, async () => {
-    init.logger?.debug("@aws-sdk/credential-provider-node - defaultProvider::remoteProvider");
-    return (await remoteProvider(init))();
-}, async () => {
-    throw new CredentialsProviderError("Could not load credentials from any providers", {
-        tryNextLink: false,
-        logger: init.logger,
-    });
-}), credentialsTreatedAsExpired, credentialsWillNeedRefresh);
-const credentialsWillNeedRefresh = (credentials) => credentials?.expiration !== undefined;
+    },
+], credentialsTreatedAsExpired);
 const credentialsTreatedAsExpired = (credentials) => credentials?.expiration !== undefined && credentials.expiration.getTime() - Date.now() < 300000;
 
 const isCrtAvailable = () => {
@@ -35397,6 +35410,18 @@ const resolveAwsRegionExtensionConfiguration = (awsRegionExtensionConfiguration)
         region: awsRegionExtensionConfiguration.region(),
     };
 };
+
+function stsRegionDefaultResolver(loaderConfig = {}) {
+    return loadConfig({
+        ...NODE_REGION_CONFIG_OPTIONS,
+        async default() {
+            {
+                console.warn("@aws-sdk - WARN - default STS region of us-east-1 used. See @aws-sdk/credential-providers README and set a region explicitly.");
+            }
+            return "us-east-1";
+        },
+    }, { ...NODE_REGION_CONFIG_FILE_OPTIONS, ...loaderConfig });
+}
 
 const getHttpAuthExtensionConfiguration$3 = (runtimeConfig) => {
     const _httpAuthSchemes = runtimeConfig.httpAuthSchemes;
@@ -37326,6 +37351,19 @@ class DescribeChangeSetCommand extends Command
     .build() {
 }
 
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                return "[Circular]";
+            }
+            seen.add(value);
+        }
+        return value;
+    };
+};
+
 const sleep = (seconds) => {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
@@ -37347,7 +37385,7 @@ const checkExceptions = (result) => {
         const abortError = new Error(`${JSON.stringify({
             ...result,
             reason: "Request was aborted",
-        })}`);
+        }, getCircularReplacer())}`);
         abortError.name = "AbortError";
         throw abortError;
     }
@@ -37355,12 +37393,12 @@ const checkExceptions = (result) => {
         const timeoutError = new Error(`${JSON.stringify({
             ...result,
             reason: "Waiter has timed out",
-        })}`);
+        }, getCircularReplacer())}`);
         timeoutError.name = "TimeoutError";
         throw timeoutError;
     }
     else if (result.state !== WaiterState.SUCCESS) {
-        throw new Error(`${JSON.stringify(result)}`);
+        throw new Error(`${JSON.stringify(result, getCircularReplacer())}`);
     }
     return result;
 };
@@ -37420,7 +37458,7 @@ const createMessageFromResponse = (reason) => {
         }
         return `${reason.$metadata.httpStatusCode}: OK`;
     }
-    return String(reason?.message ?? JSON.stringify(reason) ?? "Unknown");
+    return String(reason?.message ?? JSON.stringify(reason, getCircularReplacer()) ?? "Unknown");
 };
 
 const validateWaiterOptions = (options) => {
@@ -38181,9 +38219,11 @@ const REFRESH_MESSAGE = `To refresh this SSO session run 'aws sso login' with th
 
 const getSsoOidcClient = async (ssoRegion, init = {}) => {
     const { SSOOIDCClient } = await Promise.resolve().then(function () { return index$1; });
+    const coalesce = (prop) => init.clientConfig?.[prop] ?? init.parentClientConfig?.[prop];
     const ssoOidcClient = new SSOOIDCClient(Object.assign({}, init.clientConfig ?? {}, {
         region: ssoRegion ?? init.clientConfig?.region,
-        logger: init.clientConfig?.logger ?? init.parentClientConfig?.logger,
+        logger: coalesce("logger"),
+        userAgentAppId: coalesce("userAgentAppId"),
     }));
     return ssoOidcClient;
 };
@@ -38347,6 +38387,7 @@ const resolveSSOCredentials = async ({ ssoStartUrl, ssoSession, ssoAccountId, ss
         new SSOClient(Object.assign({}, clientConfig ?? {}, {
             logger: clientConfig?.logger ?? parentClientConfig?.logger,
             region: clientConfig?.region ?? ssoRegion,
+            userAgentAppId: clientConfig?.userAgentAppId ?? parentClientConfig?.userAgentAppId,
         }));
     let ssoResp;
     try {
@@ -38884,12 +38925,12 @@ const commonParams$2 = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version$1 = "3.916.0";
+var version$1 = "3.927.0";
 var packageInfo$1 = {
 	version: version$1};
 
 const u$2 = "required", v$2 = "fn", w$2 = "argv", x$2 = "ref";
-const a$2 = true, b$2 = "isSet", c$2 = "booleanEquals", d$2 = "error", e$2 = "endpoint", f$2 = "tree", g$2 = "PartitionResult", h$2 = "getAttr", i$2 = { [u$2]: false, "type": "String" }, j$2 = { [u$2]: true, "default": false, "type": "Boolean" }, k$2 = { [x$2]: "Endpoint" }, l$2 = { [v$2]: c$2, [w$2]: [{ [x$2]: "UseFIPS" }, true] }, m$2 = { [v$2]: c$2, [w$2]: [{ [x$2]: "UseDualStack" }, true] }, n$2 = {}, o$2 = { [v$2]: h$2, [w$2]: [{ [x$2]: g$2 }, "supportsFIPS"] }, p$2 = { [x$2]: g$2 }, q$2 = { [v$2]: c$2, [w$2]: [true, { [v$2]: h$2, [w$2]: [p$2, "supportsDualStack"] }] }, r$2 = [l$2], s$2 = [m$2], t$2 = [{ [x$2]: "Region" }];
+const a$2 = true, b$2 = "isSet", c$2 = "booleanEquals", d$2 = "error", e$2 = "endpoint", f$2 = "tree", g$2 = "PartitionResult", h$2 = "getAttr", i$2 = { [u$2]: false, "type": "string" }, j$2 = { [u$2]: true, "default": false, "type": "boolean" }, k$2 = { [x$2]: "Endpoint" }, l$2 = { [v$2]: c$2, [w$2]: [{ [x$2]: "UseFIPS" }, true] }, m$2 = { [v$2]: c$2, [w$2]: [{ [x$2]: "UseDualStack" }, true] }, n$2 = {}, o$2 = { [v$2]: h$2, [w$2]: [{ [x$2]: g$2 }, "supportsFIPS"] }, p$2 = { [x$2]: g$2 }, q$2 = { [v$2]: c$2, [w$2]: [true, { [v$2]: h$2, [w$2]: [p$2, "supportsDualStack"] }] }, r$2 = [l$2], s$2 = [m$2], t$2 = [{ [x$2]: "Region" }];
 const _data$2 = { parameters: { Region: i$2, UseDualStack: j$2, UseFIPS: j$2, Endpoint: i$2 }, rules: [{ conditions: [{ [v$2]: b$2, [w$2]: [k$2] }], rules: [{ conditions: r$2, error: "Invalid Configuration: FIPS and custom endpoint are not supported", type: d$2 }, { conditions: s$2, error: "Invalid Configuration: Dualstack and custom endpoint are not supported", type: d$2 }, { endpoint: { url: k$2, properties: n$2, headers: n$2 }, type: e$2 }], type: f$2 }, { conditions: [{ [v$2]: b$2, [w$2]: t$2 }], rules: [{ conditions: [{ [v$2]: "aws.partition", [w$2]: t$2, assign: g$2 }], rules: [{ conditions: [l$2, m$2], rules: [{ conditions: [{ [v$2]: c$2, [w$2]: [a$2, o$2] }, q$2], rules: [{ endpoint: { url: "https://oidc-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: n$2, headers: n$2 }, type: e$2 }], type: f$2 }, { error: "FIPS and DualStack are enabled, but this partition does not support one or both", type: d$2 }], type: f$2 }, { conditions: r$2, rules: [{ conditions: [{ [v$2]: c$2, [w$2]: [o$2, a$2] }], rules: [{ conditions: [{ [v$2]: "stringEquals", [w$2]: [{ [v$2]: h$2, [w$2]: [p$2, "name"] }, "aws-us-gov"] }], endpoint: { url: "https://oidc.{Region}.amazonaws.com", properties: n$2, headers: n$2 }, type: e$2 }, { endpoint: { url: "https://oidc-fips.{Region}.{PartitionResult#dnsSuffix}", properties: n$2, headers: n$2 }, type: e$2 }], type: f$2 }, { error: "FIPS is enabled but this partition does not support FIPS", type: d$2 }], type: f$2 }, { conditions: s$2, rules: [{ conditions: [q$2], rules: [{ endpoint: { url: "https://oidc.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: n$2, headers: n$2 }, type: e$2 }], type: f$2 }, { error: "DualStack is enabled but this partition does not support DualStack", type: d$2 }], type: f$2 }, { endpoint: { url: "https://oidc.{Region}.{PartitionResult#dnsSuffix}", properties: n$2, headers: n$2 }, type: e$2 }], type: f$2 }], type: f$2 }, { error: "Invalid Configuration: Missing Region", type: d$2 }] };
 const ruleSet$2 = _data$2;
 
@@ -39615,12 +39656,12 @@ const commonParams$1 = {
     UseDualStack: { type: "builtInParams", name: "useDualstackEndpoint" },
 };
 
-var version = "3.916.0";
+var version = "3.927.0";
 var packageInfo = {
 	version: version};
 
 const u$1 = "required", v$1 = "fn", w$1 = "argv", x$1 = "ref";
-const a$1 = true, b$1 = "isSet", c$1 = "booleanEquals", d$1 = "error", e$1 = "endpoint", f$1 = "tree", g$1 = "PartitionResult", h$1 = "getAttr", i$1 = { [u$1]: false, "type": "String" }, j$1 = { [u$1]: true, "default": false, "type": "Boolean" }, k$1 = { [x$1]: "Endpoint" }, l$1 = { [v$1]: c$1, [w$1]: [{ [x$1]: "UseFIPS" }, true] }, m$1 = { [v$1]: c$1, [w$1]: [{ [x$1]: "UseDualStack" }, true] }, n$1 = {}, o$1 = { [v$1]: h$1, [w$1]: [{ [x$1]: g$1 }, "supportsFIPS"] }, p$1 = { [x$1]: g$1 }, q$1 = { [v$1]: c$1, [w$1]: [true, { [v$1]: h$1, [w$1]: [p$1, "supportsDualStack"] }] }, r$1 = [l$1], s$1 = [m$1], t$1 = [{ [x$1]: "Region" }];
+const a$1 = true, b$1 = "isSet", c$1 = "booleanEquals", d$1 = "error", e$1 = "endpoint", f$1 = "tree", g$1 = "PartitionResult", h$1 = "getAttr", i$1 = { [u$1]: false, "type": "string" }, j$1 = { [u$1]: true, "default": false, "type": "boolean" }, k$1 = { [x$1]: "Endpoint" }, l$1 = { [v$1]: c$1, [w$1]: [{ [x$1]: "UseFIPS" }, true] }, m$1 = { [v$1]: c$1, [w$1]: [{ [x$1]: "UseDualStack" }, true] }, n$1 = {}, o$1 = { [v$1]: h$1, [w$1]: [{ [x$1]: g$1 }, "supportsFIPS"] }, p$1 = { [x$1]: g$1 }, q$1 = { [v$1]: c$1, [w$1]: [true, { [v$1]: h$1, [w$1]: [p$1, "supportsDualStack"] }] }, r$1 = [l$1], s$1 = [m$1], t$1 = [{ [x$1]: "Region" }];
 const _data$1 = { parameters: { Region: i$1, UseDualStack: j$1, UseFIPS: j$1, Endpoint: i$1 }, rules: [{ conditions: [{ [v$1]: b$1, [w$1]: [k$1] }], rules: [{ conditions: r$1, error: "Invalid Configuration: FIPS and custom endpoint are not supported", type: d$1 }, { conditions: s$1, error: "Invalid Configuration: Dualstack and custom endpoint are not supported", type: d$1 }, { endpoint: { url: k$1, properties: n$1, headers: n$1 }, type: e$1 }], type: f$1 }, { conditions: [{ [v$1]: b$1, [w$1]: t$1 }], rules: [{ conditions: [{ [v$1]: "aws.partition", [w$1]: t$1, assign: g$1 }], rules: [{ conditions: [l$1, m$1], rules: [{ conditions: [{ [v$1]: c$1, [w$1]: [a$1, o$1] }, q$1], rules: [{ endpoint: { url: "https://portal.sso-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: n$1, headers: n$1 }, type: e$1 }], type: f$1 }, { error: "FIPS and DualStack are enabled, but this partition does not support one or both", type: d$1 }], type: f$1 }, { conditions: r$1, rules: [{ conditions: [{ [v$1]: c$1, [w$1]: [o$1, a$1] }], rules: [{ conditions: [{ [v$1]: "stringEquals", [w$1]: [{ [v$1]: h$1, [w$1]: [p$1, "name"] }, "aws-us-gov"] }], endpoint: { url: "https://portal.sso.{Region}.amazonaws.com", properties: n$1, headers: n$1 }, type: e$1 }, { endpoint: { url: "https://portal.sso-fips.{Region}.{PartitionResult#dnsSuffix}", properties: n$1, headers: n$1 }, type: e$1 }], type: f$1 }, { error: "FIPS is enabled but this partition does not support FIPS", type: d$1 }], type: f$1 }, { conditions: s$1, rules: [{ conditions: [q$1], rules: [{ endpoint: { url: "https://portal.sso.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: n$1, headers: n$1 }, type: e$1 }], type: f$1 }, { error: "DualStack is enabled but this partition does not support DualStack", type: d$1 }], type: f$1 }, { endpoint: { url: "https://portal.sso.{Region}.{PartitionResult#dnsSuffix}", properties: n$1, headers: n$1 }, type: e$1 }], type: f$1 }], type: f$1 }, { error: "Invalid Configuration: Missing Region", type: d$1 }] };
 const ruleSet$1 = _data$1;
 
@@ -40064,7 +40105,7 @@ const commonParams = {
 };
 
 const F = "required", G = "type", H = "fn", I = "argv", J = "ref";
-const a = false, b = true, c = "booleanEquals", d = "stringEquals", e = "sigv4", f = "sts", g = "us-east-1", h = "endpoint", i = "https://sts.{Region}.{PartitionResult#dnsSuffix}", j = "tree", k = "error", l = "getAttr", m = { [F]: false, [G]: "String" }, n = { [F]: true, "default": false, [G]: "Boolean" }, o = { [J]: "Endpoint" }, p = { [H]: "isSet", [I]: [{ [J]: "Region" }] }, q = { [J]: "Region" }, r = { [H]: "aws.partition", [I]: [q], "assign": "PartitionResult" }, s = { [J]: "UseFIPS" }, t = { [J]: "UseDualStack" }, u = { "url": "https://sts.amazonaws.com", "properties": { "authSchemes": [{ "name": e, "signingName": f, "signingRegion": g }] }, "headers": {} }, v = {}, w = { "conditions": [{ [H]: d, [I]: [q, "aws-global"] }], [h]: u, [G]: h }, x = { [H]: c, [I]: [s, true] }, y = { [H]: c, [I]: [t, true] }, z = { [H]: l, [I]: [{ [J]: "PartitionResult" }, "supportsFIPS"] }, A = { [J]: "PartitionResult" }, B = { [H]: c, [I]: [true, { [H]: l, [I]: [A, "supportsDualStack"] }] }, C = [{ [H]: "isSet", [I]: [o] }], D = [x], E = [y];
+const a = false, b = true, c = "booleanEquals", d = "stringEquals", e = "sigv4", f = "sts", g = "us-east-1", h = "endpoint", i = "https://sts.{Region}.{PartitionResult#dnsSuffix}", j = "tree", k = "error", l = "getAttr", m = { [F]: false, [G]: "string" }, n = { [F]: true, "default": false, [G]: "boolean" }, o = { [J]: "Endpoint" }, p = { [H]: "isSet", [I]: [{ [J]: "Region" }] }, q = { [J]: "Region" }, r = { [H]: "aws.partition", [I]: [q], "assign": "PartitionResult" }, s = { [J]: "UseFIPS" }, t = { [J]: "UseDualStack" }, u = { "url": "https://sts.amazonaws.com", "properties": { "authSchemes": [{ "name": e, "signingName": f, "signingRegion": g }] }, "headers": {} }, v = {}, w = { "conditions": [{ [H]: d, [I]: [q, "aws-global"] }], [h]: u, [G]: h }, x = { [H]: c, [I]: [s, true] }, y = { [H]: c, [I]: [t, true] }, z = { [H]: l, [I]: [{ [J]: "PartitionResult" }, "supportsFIPS"] }, A = { [J]: "PartitionResult" }, B = { [H]: c, [I]: [true, { [H]: l, [I]: [A, "supportsDualStack"] }] }, C = [{ [H]: "isSet", [I]: [o] }], D = [x], E = [y];
 const _data = { parameters: { Region: m, UseDualStack: n, UseFIPS: n, Endpoint: m, UseGlobalEndpoint: n }, rules: [{ conditions: [{ [H]: c, [I]: [{ [J]: "UseGlobalEndpoint" }, b] }, { [H]: "not", [I]: C }, p, r, { [H]: c, [I]: [s, a] }, { [H]: c, [I]: [t, a] }], rules: [{ conditions: [{ [H]: d, [I]: [q, "ap-northeast-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "ap-south-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "ap-southeast-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "ap-southeast-2"] }], endpoint: u, [G]: h }, w, { conditions: [{ [H]: d, [I]: [q, "ca-central-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "eu-central-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "eu-north-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "eu-west-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "eu-west-2"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "eu-west-3"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "sa-east-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, g] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "us-east-2"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "us-west-1"] }], endpoint: u, [G]: h }, { conditions: [{ [H]: d, [I]: [q, "us-west-2"] }], endpoint: u, [G]: h }, { endpoint: { url: i, properties: { authSchemes: [{ name: e, signingName: f, signingRegion: "{Region}" }] }, headers: v }, [G]: h }], [G]: j }, { conditions: C, rules: [{ conditions: D, error: "Invalid Configuration: FIPS and custom endpoint are not supported", [G]: k }, { conditions: E, error: "Invalid Configuration: Dualstack and custom endpoint are not supported", [G]: k }, { endpoint: { url: o, properties: v, headers: v }, [G]: h }], [G]: j }, { conditions: [p], rules: [{ conditions: [r], rules: [{ conditions: [x, y], rules: [{ conditions: [{ [H]: c, [I]: [b, z] }, B], rules: [{ endpoint: { url: "https://sts-fips.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: v, headers: v }, [G]: h }], [G]: j }, { error: "FIPS and DualStack are enabled, but this partition does not support one or both", [G]: k }], [G]: j }, { conditions: D, rules: [{ conditions: [{ [H]: c, [I]: [z, b] }], rules: [{ conditions: [{ [H]: d, [I]: [{ [H]: l, [I]: [A, "name"] }, "aws-us-gov"] }], endpoint: { url: "https://sts.{Region}.amazonaws.com", properties: v, headers: v }, [G]: h }, { endpoint: { url: "https://sts-fips.{Region}.{PartitionResult#dnsSuffix}", properties: v, headers: v }, [G]: h }], [G]: j }, { error: "FIPS is enabled but this partition does not support FIPS", [G]: k }], [G]: j }, { conditions: E, rules: [{ conditions: [B], rules: [{ endpoint: { url: "https://sts.{Region}.{PartitionResult#dualStackDnsSuffix}", properties: v, headers: v }, [G]: h }], [G]: j }, { error: "DualStack is enabled but this partition does not support DualStack", [G]: k }], [G]: j }, w, { endpoint: { url: i, properties: v, headers: v }, [G]: h }], [G]: j }], [G]: j }, { error: "Invalid Configuration: Missing Region", [G]: k }] };
 const ruleSet = _data;
 
@@ -40899,7 +40940,6 @@ class AssumeRoleWithWebIdentityCommand extends Command
     .build() {
 }
 
-const ASSUME_ROLE_DEFAULT_REGION = "us-east-1";
 const getAccountIdFromAssumedRoleUser = (assumedRoleUser) => {
     if (typeof assumedRoleUser?.Arn === "string") {
         const arnComponents = assumedRoleUser.Arn.split(":");
@@ -40909,11 +40949,12 @@ const getAccountIdFromAssumedRoleUser = (assumedRoleUser) => {
     }
     return undefined;
 };
-const resolveRegion = async (_region, _parentRegion, credentialProviderLogger) => {
+const resolveRegion = async (_region, _parentRegion, credentialProviderLogger, loaderConfig = {}) => {
     const region = typeof _region === "function" ? await _region() : _region;
     const parentRegion = typeof _parentRegion === "function" ? await _parentRegion() : _parentRegion;
-    credentialProviderLogger?.debug?.("@aws-sdk/client-sts::resolveRegion", "accepting first of:", `${region} (provider)`, `${parentRegion} (parent client)`, `${ASSUME_ROLE_DEFAULT_REGION} (STS default)`);
-    return region ?? parentRegion ?? ASSUME_ROLE_DEFAULT_REGION;
+    const stsDefaultRegion = await stsRegionDefaultResolver(loaderConfig)();
+    credentialProviderLogger?.debug?.("@aws-sdk/client-sts::resolveRegion", "accepting first of:", `${region} (credential provider clientConfig)`, `${parentRegion} (contextual client)`, `${stsDefaultRegion} (STS default: AWS_REGION, profile region, or us-east-1)`);
+    return region ?? parentRegion ?? stsDefaultRegion;
 };
 const getDefaultRoleAssumer$1 = (stsOptions, STSClient) => {
     let stsClient;
@@ -40921,11 +40962,15 @@ const getDefaultRoleAssumer$1 = (stsOptions, STSClient) => {
     return async (sourceCreds, params) => {
         closureSourceCreds = sourceCreds;
         if (!stsClient) {
-            const { logger = stsOptions?.parentClientConfig?.logger, profile = stsOptions?.parentClientConfig?.profile, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger, } = stsOptions;
-            const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger);
+            const { logger = stsOptions?.parentClientConfig?.logger, profile = stsOptions?.parentClientConfig?.profile, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger, userAgentAppId = stsOptions?.parentClientConfig?.userAgentAppId, } = stsOptions;
+            const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger, {
+                logger,
+                profile,
+            });
             const isCompatibleRequestHandler = !isH2(requestHandler);
             stsClient = new STSClient({
                 ...stsOptions,
+                userAgentAppId,
                 profile,
                 credentialDefaultProvider: () => async () => closureSourceCreds,
                 region: resolvedRegion,
@@ -40954,11 +40999,15 @@ const getDefaultRoleAssumerWithWebIdentity$1 = (stsOptions, STSClient) => {
     let stsClient;
     return async (params) => {
         if (!stsClient) {
-            const { logger = stsOptions?.parentClientConfig?.logger, profile = stsOptions?.parentClientConfig?.profile, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger, } = stsOptions;
-            const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger);
+            const { logger = stsOptions?.parentClientConfig?.logger, profile = stsOptions?.parentClientConfig?.profile, region, requestHandler = stsOptions?.parentClientConfig?.requestHandler, credentialProviderLogger, userAgentAppId = stsOptions?.parentClientConfig?.userAgentAppId, } = stsOptions;
+            const resolvedRegion = await resolveRegion(region, stsOptions?.parentClientConfig?.region, credentialProviderLogger, {
+                logger,
+                profile,
+            });
             const isCompatibleRequestHandler = !isH2(requestHandler);
             stsClient = new STSClient({
                 ...stsOptions,
+                userAgentAppId,
                 profile,
                 region: resolvedRegion,
                 requestHandler: isCompatibleRequestHandler ? requestHandler : undefined,
