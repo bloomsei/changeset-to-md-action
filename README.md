@@ -100,9 +100,9 @@ The action generates Markdown in the following format:
 
 | Action        | Replacement | Logical ID       | Type                    |
 | ------------- | ----------- | ---------------- | ----------------------- |
-| ✳️ **Add**     | N/A         | MyS3Bucket       | AWS::S3::Bucket         |
-| 🔀 **Modify**  | False       | MyLambdaFunction | AWS::Lambda::Function   |
-| ❌ **Remove**  | N/A         | OldSecurityGroup | AWS::EC2::SecurityGroup |
+| ✳️ **Add**    | N/A         | MyS3Bucket       | AWS::S3::Bucket         |
+| 🔀 **Modify** | False       | MyLambdaFunction | AWS::Lambda::Function   |
+| ❌ **Remove** | N/A         | OldSecurityGroup | AWS::EC2::SecurityGroup |
 ```
 
 ### ChangeSet Table Legend
